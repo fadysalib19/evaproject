@@ -1,6 +1,5 @@
 import { Component, OnInit, AfterViewInit } from '@angular/core';
-import * as faceapi from 'face-api.js';
-
+import * as faceapi from '@vladmandic/face-api';
 
 @Component({
   selector: 'app-page2',
@@ -8,13 +7,24 @@ import * as faceapi from 'face-api.js';
   styleUrls: ['./page2.component.css']
 })
 export class Page2Component implements OnInit, AfterViewInit {
+  // ... rest of the code remains unchanged ...
 
   video: HTMLVideoElement;
   countdown: number = 3; // starting from 3 seconds
   isFaceDetected: boolean = false;
   uploadedImage: HTMLImageElement;
+  //canvas: HTMLCanvasElement = document.createElement('canvas');
+  displaySize: { width: number; height: number } = { width: 1200, height: 800 }; // Adjust as needed
 
-  constructor() { }
+
+
+  constructor() {
+  
+  this.video = document.createElement('video');
+  this.uploadedImage = new Image();
+  requestAnimationFrame(this.detectFaces);
+}
+
 
   async ngOnInit() {
     // Load face-api.js models or any other initialization logic
@@ -35,28 +45,19 @@ export class Page2Component implements OnInit, AfterViewInit {
     });
   }
 
+
   async detectFaces() {
     const canvas = faceapi.createCanvasFromMedia(this.video);
     document.body.append(canvas);
     const displaySize = { width: this.video.width, height: this.video.height };
     faceapi.matchDimensions(canvas, displaySize);
-
-    setInterval(async () => {
-      const detections = await faceapi.detectAllFaces(this.video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks();
-      const resizedDetections = faceapi.resizeResults(detections, displaySize);
-      canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
-      faceapi.draw.drawDetections(canvas, resizedDetections);
-      faceapi.draw.drawFaceLandmarks(canvas, resizedDetections);
-    }, 100);
-  }
-
-  async detectFaces() {
     // ... existing code ...
 
     setInterval(async () => {
       const detections = await faceapi.detectAllFaces(this.video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks();
       const resizedDetections = faceapi.resizeResults(detections, displaySize);
-      canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+      const ctx = canvas.getContext('2d');
+      //canvas?.getContext('2d')?.clearRect(0, 0, canvas.width, canvas.height);
       faceapi.draw.drawDetections(canvas, resizedDetections);
       faceapi.draw.drawFaceLandmarks(canvas, resizedDetections);
 
@@ -64,7 +65,7 @@ export class Page2Component implements OnInit, AfterViewInit {
         this.isFaceDetected = true;
         this.startCountdown();
       }
-    }, 100);
+    }, 10);
   }
 
   startCountdown() {
@@ -74,18 +75,22 @@ export class Page2Component implements OnInit, AfterViewInit {
         clearInterval(interval);
         // You can add any action you want to perform after the countdown ends
       }
-    }, 1000);
+    }, 100);
   }
 
   async onImageUpload(event: Event) {
-    const file = (event.target as HTMLInputElement).files[0];
-    const image = new Image();
-    image.src = URL.createObjectURL(file);
-    image.onload = async () => {
-      this.uploadedImage = image;
-      const detections = await faceapi.detectAllFaces(image, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks();
-      // Handle the detections as needed, e.g., draw them on a canvas
-    };
+    const target = event.target as HTMLInputElement;
+    if (target && target.files && target.files.length > 0) {
+      const file = target.files[0];
+    
+      const image = new Image();
+      image.src = URL.createObjectURL(file);
+      image.onload = async () => {
+        this.uploadedImage = image;
+        const detections = await faceapi.detectAllFaces(image, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks();
+        // Handle the detections as needed, e.g., draw them on a canvas
+      };
+    }
   }
 }
 
