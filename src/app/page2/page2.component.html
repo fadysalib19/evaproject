@@ -1,0 +1,15 @@
+<p>page2 works!</p>
+
+<!-- Video element -->
+<video id="video" width="720" height="560" autoplay muted></video>
+
+<!-- Countdown display -->
+<div *ngIf="isFaceDetected && countdown > 0">
+  {{ countdown }}
+</div>
+
+<!-- Image upload input -->
+<input type="file" (change)="onImageUpload($event)" accept="image/*">
+
+<!-- Display uploaded image (optional) -->
+<img *ngIf="uploadedImage" [src]="uploadedImage.src" alt="Uploaded Image">
